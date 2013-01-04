@@ -1,0 +1,130 @@
+﻿<!DOCTYPE html>
+<html>
+	<head>
+		<title>微信接口调试工具</title>
+		<script src="../lib/jquery-1.8.3.min.js"></script>
+		<!--<script src="jquery.js"></script>-->
+		<script>
+$(function(){
+	//alert($);
+	var defaultTxt = '<xml><ToUserName><![CDATA[toUser]]></ToUserName><FromUserName><![CDATA[fromUser]]></FromUserName><CreateTime>1348831860</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA[t]]></Content></xml>';
+	$('#send_content').val(defaultTxt);
+	var defaultLocation = '<xml><ToUserName><![CDATA[toUser]]></ToUserName><FromUserName><![CDATA[fromUser]]></FromUserName><CreateTime>1351776360</CreateTime><MsgType><![CDATA[location]]></MsgType><Location_X>23.134521</Location_X><Location_Y>113.358803</Location_Y><Scale>20</Scale><Label><![CDATA[位置信息]]></Label></xml>';
+	var defaultNews = '<xml><ToUserName><![CDATA[toUser]]></ToUserName><FromUserName><![CDATA[fromUser]]></FromUserName><CreateTime>1348831860</CreateTime><MsgType><![CDATA[image]]></MsgType><PicUrl><![CDATA[this is a url]]></PicUrl></xml>';
+	
+	$('#loadText').click(function(){
+		$('#send_content').val(defaultTxt);
+	});
+	
+	$('#loadLocation').click(function(){
+		$('#send_content').val(defaultLocation);
+	});
+	
+	$('#loadNews').click(function(){
+		$('#send_content').val(defaultNews);
+	});
+	
+	$('#send').click(function(){
+		var start = new Date();
+		var url = $('#url').val();
+		var send_content = $('#send_content').val();
+        var xmlDocument =encodeURIComponent(send_content);
+		ajaxSend(url,send_content,function(data){
+			$('#receive_content').val(data);
+			var end = new Date();
+			var cost = end-start;
+			$('#cost').html(cost+'ms cost.');
+			
+		});
+		/*
+		$.ajax({
+			url:url,
+			type:'post',
+			data: send_content,
+			dataType:'xml',
+			success:function(data){
+				$('#receive_content').val(data.xml);
+			},
+			error:function(){
+				alert();
+		}});
+		*/
+	});
+	
+
+});
+function ajaxSend(url,data,callback){
+// for the raw responsetext,jQuery need restrict xml response.
+	var xmlobj;
+	if(window.ActiveXObject){
+		try{
+			xmlobj = new ActiveXObject("Msxml2.XMLHTTP");
+		}catch(e){
+			try{
+				xmlobj = new ActiveXObject("Microsoft.XMLHTTP");
+			}catch(e1){
+			   xmlobj = false;
+			}
+		}
+	}else if(window.XMLHttpRequest){
+		xmlobj = new XMLHttpRequest();
+	}
+	xmlobj.open("POST", url, true);
+	xmlobj.setRequestHeader("cache-control","no-cache");
+	xmlobj.setRequestHeader("contentType","text/xml;charset=uft-8");
+    //xmlobj.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;"); 
+	
+    xmlobj.onreadystatechange = function(){
+		if(xmlobj.readyState==4){
+            if (xmlobj.status==200){
+			//debugger;
+				callback.call(null,xmlobj.responseText);// any other things?
+            }else{
+				callback.call(null,null,'request error');
+			}
+        } 
+	};
+    xmlobj.send(data);
+}
+		</script>
+		<style>
+		
+div {
+	font-size:12px;
+}	
+button{
+font-size:12px;
+}
+
+		</style>
+	</head>
+	<body>
+		<div>
+			<div style="float:left">
+				<div>
+					
+					<div >接口地址  <input id="url" value="http://localhost/Myproject/wx_interface/index.php" style="width:298px"/></div>
+					<div >
+						<textarea id="send_content" cols="47" rows="13"></textarea>
+					</div>
+					<div >
+						<button id="loadText">载入文本xml</button>
+						<button id="loadLocation">载入地理xml</button>
+						<button id="loadNews">载入图片xml</button>
+						<button id="send">提交</button>
+					</div>
+					<div>
+						<font color="red">版权所有 </font>
+					</div>
+				</div>
+				
+			</div>
+			<div style="right:left;">
+				<textarea id="receive_content"  cols="50" rows="14">
+				</textarea>
+				<div id="cost"></div>
+			</div>
+		</div>
+		
+	</body>
+</html>
